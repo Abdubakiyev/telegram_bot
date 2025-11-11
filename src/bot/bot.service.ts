@@ -109,13 +109,18 @@ Operator siz bilan tez orada bog‘lanadi.
 
     // Oddiy matn xabariga javob — menyuni ko‘rsatish
     this.bot.on('text', async (ctx) => {
-      await ctx.reply('Manu tanlang:', {
-        reply_markup: Markup.inlineKeyboard([
-          [Markup.button.callback('💰 Almas narxlari', 'price')],
-          [Markup.button.callback('🔁 Almas olish', 'buy')],
-        ]) as any,
-      });
+      await ctx.reply(
+        'Manu tanlang:',
+        {
+          parse_mode: 'Markdown',
+          ...Markup.inlineKeyboard([
+            [Markup.button.callback('💰 Almas narxlari', 'price')],
+            [Markup.button.callback('🔁 Almas olish', 'buy')],
+          ]),
+        },
+      );
     });
+    
 
     // Botni ishga tushuramiz
     this.bot.launch();
