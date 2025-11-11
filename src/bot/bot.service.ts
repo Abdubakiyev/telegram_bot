@@ -45,6 +45,11 @@ export class BotService implements OnModuleInit {
       );
     });
 
+    // /help komandasi
+    this.bot.help((ctx) =>
+      ctx.reply('🧩 Buyruqlar:\n/start - boshlash\n/help - yordam'),
+    );
+
     // 💰 Almas narxlari tugmasi bosilganda
     this.bot.action('price', async (ctx) => {
       await ctx.answerCbQuery();
@@ -80,7 +85,7 @@ export class BotService implements OnModuleInit {
 👉 ID raqamingizni yuboring
 👉 To‘lovni amalga oshiring
 👉 Almazlaringizni qabul qiling ⚡️
-      `,
+        `,
         { parse_mode: 'Markdown' },
       );
     });
@@ -97,24 +102,23 @@ export class BotService implements OnModuleInit {
 
 Operator siz bilan tez orada bog‘lanadi.  
 📞 Aloqa: @suhrobgiyosov
-      `,
+        `,
         { parse_mode: 'Markdown' },
       );
     });
 
-    // /help komandasi
-    this.bot.help((ctx) =>
-      ctx.reply('🧩 Buyruqlar:\n/start - boshlash\n/help - yordam'),
-    );
+    // Oddiy matn xabariga javob — menyuni ko‘rsatish
+    this.bot.on('text', async (ctx) => {
+      await ctx.reply('Manu tanlang:', {
+        reply_markup: Markup.inlineKeyboard([
+          [Markup.button.callback('💰 Almas narxlari', 'price')],
+          [Markup.button.callback('🔁 Almas olish', 'buy')],
+        ]) as any,
+      });
+    });
 
-    // oddiy matn xabariga javob
-    this.bot.on('text', (ctx) =>
-      ctx.reply(`Siz yozdingiz: ${ctx.message.text}`),
-    );
-
-    // botni ishga tushuramiz
+    // Botni ishga tushuramiz
     this.bot.launch();
-
     console.log('✅ Telegram bot menyu bilan ishga tushdi...');
   }
 }
