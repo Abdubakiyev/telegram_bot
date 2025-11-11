@@ -13,7 +13,7 @@ export class BotService implements OnModuleInit {
     this.bot = new Telegraf(token);
   }
 
-  onModuleInit() {
+  async onModuleInit() {
     // /start komandasi
     this.bot.start(async (ctx) => {
       const photoPath = path.join(
@@ -123,7 +123,11 @@ Operator siz bilan tez orada bog‘lanadi.
     
 
     // Botni ishga tushuramiz
-    this.bot.launch();
+    await this.bot.launch(); // polling
+    process.once('SIGINT', () => this.bot.stop('SIGINT'));
+    process.once('SIGTERM', () => this.bot.stop('SIGTERM'));
+
+    
     console.log('✅ Telegram bot menyu bilan ishga tushdi...');
   }
 }
