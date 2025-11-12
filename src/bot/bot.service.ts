@@ -116,8 +116,7 @@ Operator siz bilan tez orada bog‘lanadi.
     await this.bot.launch({
       webhook: {
         domain: WEBHOOK_URL, // qat’iy string bo‘lishi kerak
-        port: parseInt(process.env.PORT || '3000'),
-        hookPath: '/telegraf' // xohlagan path
+        port: parseInt(process.env.PORT!),
       }
     });
     
