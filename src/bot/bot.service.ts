@@ -115,10 +115,10 @@ Operator siz bilan tez orada bog‘lanadi.
     // === Webhook orqali ishga tushiramiz ===
     await this.bot.launch({
       webhook: {
-        domain: WEBHOOK_URL, // qat’iy string bo‘lishi kerak
-        port: parseInt(process.env.PORT!),
-      }
-    });
+        domain: this.configService.get<string>('WEBHOOK_URL')!, // TypeScript uchun "!"
+        port: parseInt(process.env.PORT!), // Render avtomatik $PORT beradi
+      },
+    });    
     
     
 
