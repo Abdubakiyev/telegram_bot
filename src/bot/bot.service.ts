@@ -122,21 +122,13 @@ Operator siz bilan tez orada bog‘lanadi.
       console.warn('⚠️ Webhook o‘chirishda xatolik:', err.message);
     }
 
-    // === Webhook bilan botni ishga tushiramiz ===
-    const PORT = parseInt(process.env.PORT || '3000');
+    // Pollingni ishga tushiramiz
+    await this.bot.launch();
 
-    const WEBHOOK_URL = this.configService.get<string>('WEBHOOK_URL');
-    if (!WEBHOOK_URL) throw new Error('❌ WEBHOOK_URL topilmadi');
+    process.once('SIGINT', () => this.bot.stop('SIGINT'));
+    process.once('SIGTERM', () => this.bot.stop('SIGTERM'));
 
-    await this.bot.launch({
-      webhook: {
-        domain: WEBHOOK_URL,
-        port: PORT,
-        hookPath: `/webhook/${this.configService.get<string>('TELEGRAM_BOT_TOKEN')}`,
-      },
-    });
-
-    console.log(`✅ Telegram bot webhook bilan ishga tushdi. URL: ${WEBHOOK_URL}/webhook/...`);
+    console.log('✅ Telegram bot polling bilan ishga tushdi...');
   }
 
   async onModuleDestroy() {
