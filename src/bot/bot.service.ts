@@ -4,6 +4,7 @@ import { Telegraf, Markup } from 'telegraf';
 import * as fs from 'fs';
 import * as path from 'path';
 
+
 @Injectable()
 export class BotService implements OnModuleInit, OnModuleDestroy {
   private bot: Telegraf;
@@ -11,6 +12,7 @@ export class BotService implements OnModuleInit, OnModuleDestroy {
   constructor(private configService: ConfigService) {
     const token = this.configService.get<string>('TELEGRAM_BOT_TOKEN');
     if (!token) throw new Error('❌ TELEGRAM_BOT_TOKEN topilmadi');
+
     this.bot = new Telegraf(token);
   }
 
@@ -104,7 +106,7 @@ Operator siz bilan tez orada bog‘lanadi.
 
     // === Oddiy matn kelganda menyu chiqadi ===
     this.bot.on('text', async (ctx) => {
-      await ctx.reply('Manu tanlang:', {
+      await ctx.reply('Menu tanlang:', {
         parse_mode: 'Markdown',
         ...Markup.inlineKeyboard([
           [Markup.button.callback('💰 Almas narxlari', 'price')],
@@ -113,23 +115,32 @@ Operator siz bilan tez orada bog‘lanadi.
       });
     });
 
-    // === Webhook o‘chirib tashlanadi (409 Conflict oldini olish uchun) ===
+    // === Webhookni o‘chirib, yangi webhook sozlash ===
     try {
       await this.bot.telegram.deleteWebhook();
     } catch (err) {
       console.warn('⚠️ Webhook o‘chirishda xatolik:', err.message);
     }
 
-    // === Pollingni ishga tushuramiz ===
-    await this.bot.launch();
+    // === Webhook bilan botni ishga tushiramiz ===
+    const PORT = parseInt(process.env.PORT || '3000');
 
-    process.once('SIGINT', () => this.bot.stop('SIGINT'));
-    process.once('SIGTERM', () => this.bot.stop('SIGTERM'));
+    const WEBHOOK_URL = this.configService.get<string>('WEBHOOK_URL');
+    if (!WEBHOOK_URL) throw new Error('❌ WEBHOOK_URL topilmadi');
 
-    console.log('✅ Telegram bot menyu bilan ishga tushdi...');
+    await this.bot.launch({
+      webhook: {
+        domain: WEBHOOK_URL,
+        port: PORT,
+        hookPath: `/webhook/${this.configService.get<string>('TELEGRAM_BOT_TOKEN')}`,
+      },
+    });
+
+    console.log(`✅ Telegram bot webhook bilan ishga tushdi. URL: ${WEBHOOK_URL}/webhook/...`);
   }
 
   async onModuleDestroy() {
     await this.bot.stop('ModuleDestroy');
+    console.log('🛑 Telegram bot to‘xtatildi.');
   }
 }
