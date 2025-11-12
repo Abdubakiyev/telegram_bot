@@ -115,10 +115,13 @@ Operator siz bilan tez orada bog‘lanadi.
     // === Webhook orqali ishga tushiramiz ===
     await this.bot.launch({
       webhook: {
-        domain: WEBHOOK_URL,
-        port: PORT,
-      },
+        domain: WEBHOOK_URL, // qat’iy string bo‘lishi kerak
+        port: parseInt(process.env.PORT || '3000'),
+        hookPath: '/telegraf' // xohlagan path
+      }
     });
+    
+    
 
     process.once('SIGINT', () => this.bot.stop('SIGINT'));
     process.once('SIGTERM', () => this.bot.stop('SIGTERM'));
