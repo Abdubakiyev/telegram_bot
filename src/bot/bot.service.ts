@@ -4,7 +4,6 @@ import { Telegraf, Markup } from 'telegraf';
 import * as fs from 'fs';
 import * as path from 'path';
 
-
 @Injectable()
 export class BotService implements OnModuleInit, OnModuleDestroy {
   private bot: Telegraf;
@@ -20,7 +19,6 @@ export class BotService implements OnModuleInit, OnModuleDestroy {
     // === /start komandasi ===
     this.bot.start(async (ctx) => {
       const photoPath = path.join(process.cwd(), 'dist', 'assets', 'images', 'logo.jpg');
-
       const caption = `
 📢 Bu botda siz hozirgi kunda almas narxlari va MLBBga donat qilishni eng oson va eng arzon yo‘l bilan amalga oshirishingiz mumkin!
 
@@ -46,12 +44,10 @@ export class BotService implements OnModuleInit, OnModuleDestroy {
       }
     });
 
-    // === /help komandasi ===
-    this.bot.help((ctx) =>
-      ctx.reply('🧩 Buyruqlar:\n/start - boshlash\n/help - yordam'),
-    );
+    // /help komandasi
+    this.bot.help((ctx) => ctx.reply('🧩 Buyruqlar:\n/start - boshlash\n/help - yordam'));
 
-    // === 💰 Almas narxlari ===
+    // 💰 Almas narxlari
     this.bot.action('price', async (ctx) => {
       await ctx.answerCbQuery();
       await ctx.reply(
@@ -71,23 +67,12 @@ export class BotService implements OnModuleInit, OnModuleDestroy {
 (5000 + 1000) 💎 — 1 090 000 so‘m 💥
 
 💳 Weekly Diamond Pass — 25 000 so‘m
-
-⚙️ Afzalliklar:
-✅ 1–5 daqiqada yetkazib berish  
-✅ 100% ishonchli to‘lov tizimi  
-✅ Doimiy mijozlarga bonuslar 🎁  
-✅ 24/7 qo‘llab-quvvatlash  
-
-📩 Buyurtma uchun:
-👉 ID raqamingizni yuboring  
-👉 To‘lovni amalga oshiring  
-👉 Almazlaringizni qabul qiling ⚡️
         `,
         { parse_mode: 'Markdown' },
       );
     });
 
-    // === 🔁 Almas sotib olish ===
+    // 🔁 Almas sotib olish
     this.bot.action('buy', async (ctx) => {
       await ctx.answerCbQuery();
       await ctx.reply(
@@ -104,7 +89,7 @@ Operator siz bilan tez orada bog‘lanadi.
       );
     });
 
-    // === Oddiy matn kelganda menyu chiqadi ===
+    // Oddiy matn kelganda menyu
     this.bot.on('text', async (ctx) => {
       await ctx.reply('Menu tanlang:', {
         parse_mode: 'Markdown',
@@ -115,20 +100,30 @@ Operator siz bilan tez orada bog‘lanadi.
       });
     });
 
-    // === Webhookni o‘chirib, yangi webhook sozlash ===
+    // === Webhookni o‘chirib, yangi webhookni sozlash ===
     try {
       await this.bot.telegram.deleteWebhook();
     } catch (err) {
       console.warn('⚠️ Webhook o‘chirishda xatolik:', err.message);
     }
 
-    // Pollingni ishga tushiramiz
-    await this.bot.launch();
+    const WEBHOOK_URL = this.configService.get<string>('WEBHOOK_URL');
+    const PORT = parseInt(process.env.PORT || '3000');
+
+    if (!WEBHOOK_URL) throw new Error('❌ WEBHOOK_URL topilmadi. Ngrok yoki haqiqiy HTTPS URL kerak.');
+
+    // === Webhook orqali ishga tushiramiz ===
+    await this.bot.launch({
+      webhook: {
+        domain: WEBHOOK_URL,
+        port: PORT,
+      },
+    });
 
     process.once('SIGINT', () => this.bot.stop('SIGINT'));
     process.once('SIGTERM', () => this.bot.stop('SIGTERM'));
 
-    console.log('✅ Telegram bot polling bilan ishga tushdi...');
+    console.log(`✅ Telegram bot webhook bilan ishga tushdi: ${WEBHOOK_URL}`);
   }
 
   async onModuleDestroy() {
